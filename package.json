@@ -1,0 +1,8 @@
+{
+  "name": "duka-pull",
+  "version": "1.0.0",
+  "private": true,
+  "main": "fetch.js",
+  "scripts": { "start": "node fetch.js" },
+  "dependencies": { "dukascopy-node": "latest" }
+}
