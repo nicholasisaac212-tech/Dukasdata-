@@ -8,8 +8,8 @@ print("keys loaded:", len(KEYS))
 _rot = [0]
 _last = {}
 PAIRS = ["USD/JPY", "GBP/JPY", "EUR/JPY", "AUD/JPY"]
-START = dt.date(2025, 10, 1)
-END = dt.date.today() + dt.timedelta(days=1)
+START = dt.date(2022, 12, 26)
+END = dt.date(2025, 10, 2)
 STEP = 3             # days per request (3*1440 = 4320 rows < 5000 cap)
 PAUSE = 9            # min seconds between requests on the SAME key (free plan: 8 per minute)
 os.makedirs("out", exist_ok=True)
