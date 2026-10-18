@@ -3,7 +3,7 @@ on: workflow_dispatch
 jobs:
   pull:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - run: python td_pull_m1.py
