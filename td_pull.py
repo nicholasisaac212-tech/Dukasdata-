@@ -7,7 +7,7 @@ if not KEYS:
 print("keys loaded:", len(KEYS))
 _rot = [0]
 _last = {}
-PAIRS = ["USD/JPY", "GBP/JPY", "EUR/JPY", "AUD/JPY"]
+PAIRS = ["EUR/USD","GBP/USD","AUD/USD","NZD/USD","USD/CAD","USD/CHF","EUR/CHF","GBP/CHF","EUR/AUD","GBP/AUD","EUR/CAD","GBP/CAD","AUD/CAD","AUD/NZD","EUR/GBP"]
 START = dt.date(2022, 12, 26)
 END = dt.date.today() + dt.timedelta(days=1)
 STEP = 45            # days per request (45*96 = 4320 rows < 5000 cap)
@@ -65,3 +65,4 @@ for sym in PAIRS:
         for k in sorted(rows): w.writerow((k,) + rows[k])
     print("saved", name, len(rows), "rows", flush=True)
 print("DONE")
+                               
