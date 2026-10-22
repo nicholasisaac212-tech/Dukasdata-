@@ -1,0 +1,51 @@
+name: dukascopy-pull
+
+on:
+  workflow_dispatch:
+    inputs:
+      pairs:
+        description: 'JSON list of pairs'
+        default: '["USDJPY","GBPJPY","EURJPY","AUDJPY","CADJPY"]'
+      years:
+        description: 'JSON list of years'
+        default: '[2023,2024,2025,2026]'
+      delay:
+        description: 'seconds between requests (raise if you see 429s)'
+        default: '0.5'
+      start:
+        description: 'optional start date YYYY-MM-DD (overrides the year, for a test run)'
+        default: ''
+      end:
+        description: 'optional end date YYYY-MM-DD (inclusive)'
+        default: ''
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        pair: ${{ fromJSON(inputs.pairs) }}
+        year: ${{ fromJSON(inputs.years) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pandas numpy
+      - name: Download
+        env:
+          S: ${{ inputs.start != '' && inputs.start || format('{0}-01-01', matrix.year) }}
+          E: ${{ inputs.end != '' && inputs.end || (matrix.year == 2026 && '2026-10-21' || format('{0}-12-31', matrix.year)) }}
+        run: python duka_safe.py --symbols ${{ matrix.pair }} --start "$S" --end "$E" --delay ${{ inputs.delay }}
+      - name: Keep the result even if some days failed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.pair }}-${{ matrix.year }}
+          path: |
+            out/
+            ledger_*.csv
+          if-no-files-found: warn
