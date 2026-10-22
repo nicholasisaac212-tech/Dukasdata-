@@ -1,0 +1,53 @@
+name: dukascopy-node-candles
+
+on:
+  workflow_dispatch:
+    inputs:
+      pairs:
+        description: 'JSON list of lowercase pairs'
+        default: '["usdjpy","gbpjpy","eurjpy","audjpy","cadjpy"]'
+      years:
+        description: 'JSON list of years'
+        default: '[2023,2024,2025,2026]'
+      timeframe:
+        description: 'm15 (default) or m1'
+        default: 'm15'
+      start:
+        description: 'optional start date YYYY-MM-DD (test run)'
+        default: ''
+      end:
+        description: 'optional end date YYYY-MM-DD (test run)'
+        default: ''
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        pair: ${{ fromJSON(inputs.pairs) }}
+        year: ${{ fromJSON(inputs.years) }}
+        side: [bid, ask]
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Show the tool's flags
+        run: npx --yes dukascopy-node --help || true
+      - name: Download
+        env:
+          S: ${{ inputs.start != '' && inputs.start || format('{0}-01-01', matrix.year) }}
+          E: ${{ inputs.end != '' && inputs.end || (matrix.year == 2026 && '2026-10-21' || format('{0}-12-31', matrix.year)) }}
+        run: |
+          npx --yes dukascopy-node -i ${{ matrix.pair }} -from "$S" -to "$E" -t ${{ inputs.timeframe }} -p ${{ matrix.side }} -f csv -v true -fl false -bs 5 -bp 2000 -r 5 -rp 4000 -re true -dir out -fn ${{ matrix.pair }}_${{ matrix.side }}_${{ matrix.year }}
+          ls -la out
+          head -3 out/*.csv
+      - name: Keep the result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.pair }}-${{ matrix.side }}-${{ matrix.year }}
+          path: out/
+          if-no-files-found: warn
